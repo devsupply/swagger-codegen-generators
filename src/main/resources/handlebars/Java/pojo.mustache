@@ -3,11 +3,15 @@
  */
 {{#description}}{{#useOas2}}@ApiModel{{/useOas2}}{{^useOas2}}@Schema{{/useOas2}}(description = "{{{description}}}"){{/description}}
 {{>generatedAnnotation}}{{#discriminator}}{{>typeInfoAnnotation}}{{/discriminator}}{{>xmlAnnotation}}
-
+{{#if jackson}}@com.fasterxml.jackson.databind.annotation.JsonDeserialize(builder = {{classname}}.Builder.class){{/if}}
 public class {{classname}} {{#parent}}extends {{{parent}}} {{/parent}}{{#parcelableModel}}implements Parcelable {{#serializableModel}}, Serializable {{/serializableModel}}{{#interfaceModels}}{{#@first}}, {{/@first}}{{name}}{{^@last}}, {{/@last}}{{#@last}} {{/@last}}{{/interfaceModels}}{{/parcelableModel}}{{^parcelableModel}}{{#serializableModel}}implements Serializable{{#interfaceModels}}, {{name}}{{^@last}}, {{/@last}}{{#@last}} {{/@last}}{{/interfaceModels}}{{/serializableModel}}{{^serializableModel}}{{#interfaceModels}}{{#@first}}implements {{/@first}}{{name}}{{^@last}}, {{/@last}}{{#@last}} {{/@last}}{{/interfaceModels}}{{/serializableModel}}{{/parcelableModel}}{
 {{#serializableModel}}
   private static final long serialVersionUID = 1L;
 {{/serializableModel}}
+
+  {{#if vendorExtensions.x-error-key}}public static final String MESSAGE_KEY = "{{vendorExtensions.x-error-key}}";{{/if}}
+  {{#if vendorExtensions.x-default-message}}public static final String DEFAULT_MESSAGE = "{{vendorExtensions.x-default-message}}";{{/if}}
+
   {{#vars}}
     {{#isEnum}}
     {{^isContainer}}
@@ -68,63 +72,19 @@ public class {{classname}} {{#parent}}extends {{{parent}}} {{/parent}}{{#parcela
   private {{{datatypeWithEnum}}} {{name}}{{#required}} = {{{defaultValue}}}{{/required}}{{^required}} = null{{/required}};
   {{/isContainer}}
   {{^isContainer}}
-  private {{{datatypeWithEnum}}} {{name}} = {{{defaultValue}}};
+  private final {{{datatypeWithEnum}}} {{name}};
   {{/isContainer}}
 
   {{/vars}}
-  {{#parcelableModel}}
-  public {{classname}}() {
-  {{#parent}}
-    super();
-  {{/parent}}
-  {{#gson}}
-  {{#discriminator}}
-    this.{{discriminator.propertyName}} = this.getClass().getSimpleName();
-  {{/discriminator}}
-  {{/gson}}
-  }
-  {{/parcelableModel}}
-  {{^parcelableModel}}
-  {{#gson}}
-  {{#discriminator}}
-  public {{classname}}() {
-    this.{{discriminator.propertyName}} = this.getClass().getSimpleName();
-  }
-  {{/discriminator}}
-  {{/gson}}
-  {{/parcelableModel}}
+  {{#if children}}protected{{else}}private{{/if}} {{classname}}({{#parentModel.vars}}{{{datatypeWithEnum}}} {{name}}{{#has this 'more'}}, {{/has}}{{/parentModel.vars}}{{#if parentModel.vars}}{{#if vars}}, {{/if}}{{/if}}{{#vars}}{{{datatypeWithEnum}}} {{name}}{{#has this 'more'}}, {{/has}}{{/vars}}) {
+    {{#if parent}}super({{#parentModel.vars}}{{name}}{{#has this 'more'}}, {{/has}}{{/parentModel.vars}});{{/if}}
+
   {{#vars}}
-  {{^isReadOnly}}
-  public {{classname}} {{name}}({{{datatypeWithEnum}}} {{name}}) {
     this.{{name}} = {{name}};
-    return this;
+  {{/vars}}
   }
-  {{#isListContainer}}
 
-  public {{classname}} add{{nameInCamelCase}}Item({{{items.datatypeWithEnum}}} {{name}}Item) {
-    {{^required}}
-    if (this.{{name}} == null) {
-      this.{{name}} = {{{defaultValue}}};
-    }
-    {{/required}}
-    this.{{name}}.add({{name}}Item);
-    return this;
-  }
-  {{/isListContainer}}
-  {{#isMapContainer}}
-
-  public {{classname}} put{{nameInCamelCase}}Item(String key, {{{items.datatypeWithEnum}}} {{name}}Item) {
-    {{^required}}
-    if (this.{{name}} == null) {
-      this.{{name}} = {{{defaultValue}}};
-    }
-    {{/required}}
-    this.{{name}}.put(key, {{name}}Item);
-    return this;
-  }
-  {{/isMapContainer}}
-
-  {{/isReadOnly}}
+  {{#vars}}
    /**
   {{#description}}
    * {{description}}
@@ -150,19 +110,53 @@ public class {{classname}} {{#parent}}extends {{{parent}}} {{/parent}}{{#parcela
 {{#vendorExtensions.extraAnnotation}}
   {{{vendorExtensions.extraAnnotation}}}
 {{/vendorExtensions.extraAnnotation}}
+  @com.fasterxml.jackson.annotation.JsonGetter("{{name}}")
   public {{{datatypeWithEnum}}} {{getter}}() {
     return {{name}};
   }
-  {{^isReadOnly}}
-
-  public void {{setter}}({{{datatypeWithEnum}}} {{name}}) {
-    this.{{name}} = {{name}};
-  }
-  {{/isReadOnly}}
-
   {{/vars}}
 
-{{^supportJava6}}
+  {{#if jackson}}@com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder(withPrefix = ""){{/if}}
+  public static class Builder {
+  {{#parentModel.vars}}
+      private {{{getJavaProperty}}};
+  {{/parentModel.vars}}
+  {{#vars}}
+      private {{{getJavaProperty}}};
+  {{/vars}}
+
+      public Builder from({{classname}} that) {
+      {{#parentModel.vars}}
+          this.{{name}} = that.{{getter}}();
+      {{/parentModel.vars}}
+      {{#vars}}
+          this.{{name}} = that.{{getter}}();
+      {{/vars}}
+          return this;
+      }
+
+  {{#parentModel.vars}}
+      @com.fasterxml.jackson.annotation.JsonSetter("{{name}}")
+      public Builder {{name}}({{{datatypeWithEnum}}} {{name}}) {
+          this.{{name}} = {{name}};
+          return this;
+      }
+  {{/parentModel.vars}}
+
+  {{#vars}}
+      @com.fasterxml.jackson.annotation.JsonSetter("{{name}}")
+      public Builder {{name}}({{{datatypeWithEnum}}} {{name}}) {
+          this.{{name}} = {{name}};
+          return this;
+      }
+  {{/vars}}
+
+      public {{classname}} build() {
+          return new {{classname}}({{#parentModel.vars}}{{name}}{{#has this 'more'}}, {{/has}}{{/parentModel.vars}}{{#if parentModel.vars}}{{#if vars}}, {{/if}}{{/if}}{{#vars}}{{name}}{{#has this 'more'}}, {{/has}}{{/vars}});
+      }
+  }
+
+  {{^supportJava6}}
   @Override
   public boolean equals(java.lang.Object o) {
     if (this == o) {
@@ -244,6 +238,10 @@ public class {{classname}} {{#parent}}extends {{{parent}}} {{/parent}}{{#parcela
 {{/vars}}
 {{/isArrayModel}}
 {{/model}}
+  }
+
+  public {{classname}}() {
+    super();
   }
 
   {{classname}}(Parcel in) {
