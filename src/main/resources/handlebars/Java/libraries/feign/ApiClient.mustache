@@ -1,7 +1,16 @@
 package {{invokerPackage}};
 
+{{#isPostgrest}}
+import java.util.ArrayList;
+import java.util.Collection;
+{{/isPostgrest}}
 import java.util.LinkedHashMap;
 import java.util.Map;
+{{#isPostgrest}}
+
+import feign.RequestInterceptor;
+import feign.RequestTemplate;
+{{/isPostgrest}}
 
 import org.apache.oltu.oauth2.client.request.OAuthClientRequest.AuthenticationRequestBuilder;
 import org.apache.oltu.oauth2.client.request.OAuthClientRequest.TokenRequestBuilder;
@@ -47,7 +56,28 @@ public class ApiClient {
     feignBuilder = Feign.builder()
                 .encoder(new FormEncoder(new JacksonEncoder(objectMapper)))
                 .decoder(new JacksonDecoder(objectMapper))
+                {{#isPostgrest}}
+                .requestInterceptor(new RequestInterceptor() {
+                  @Override
+                  public void apply(RequestTemplate template) {
+                    Map<String, Collection<String>> queries = template.queries();
+                    for (Map.Entry<String, Collection<String>> query : queries.entrySet()) {
+                      String key = query.getKey();
+                      Collection<String> values = query.getValues();
+                      Collection<String> newValues = new ArrayList<String>();
+                      for (String value : values) {
+                        newValues.add("eq." + value);
+                      }
+                      template.query(key, newValues);
+                    }
+                  }
+                })
+                {{/isPostgrest}}
                 .logger(new Slf4jLogger());
+    {{#isPostgrest}}
+    // Hello!
+    {{/isPostgrest}}
+    // Goodbye
   }
 
   public ApiClient(String[] authNames) {
