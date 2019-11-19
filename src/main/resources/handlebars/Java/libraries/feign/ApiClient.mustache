@@ -63,7 +63,7 @@ public class ApiClient {
                     Map<String, Collection<String>> queries = template.queries();
                     for (Map.Entry<String, Collection<String>> query : queries.entrySet()) {
                       String key = query.getKey();
-                      Collection<String> values = query.getValues();
+                      Collection<String> values = query.getValue();
                       Collection<String> newValues = new ArrayList<String>();
                       for (String value : values) {
                         newValues.add("eq." + value);
