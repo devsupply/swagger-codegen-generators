@@ -30,7 +30,6 @@ public class {{classname}} {{#parent}}extends {{{parent}}} {{/parent}}{{#parcela
   @JsonTypeId
     {{/vendorExtensions.x-is-discriminator-property}}
     {{^vendorExtensions.x-is-discriminator-property}}
-  @JsonProperty("{{baseName}}")
     {{#withXml}}
       {{^isContainer}}
   @JacksonXmlProperty({{#isXmlAttribute}}isAttribute = true, {{/isXmlAttribute}}{{#xmlNamespace}}namespace="{{xmlNamespace}}", {{/xmlNamespace}}localName = "{{#xmlName}}{{xmlName}}{{/xmlName}}{{^xmlName}}{{baseName}}{{/xmlName}}")
