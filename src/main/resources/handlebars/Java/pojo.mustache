@@ -124,18 +124,19 @@ public class {{classname}} {{#parent}}extends {{{parent}}} {{/parent}}{{#parcela
       private {{{getJavaProperty}}};
   {{/vars}}
 
-      public Builder from({{classname}} that) {
+      public static Builder from({{classname}} that) {
+        Builder builder = new Builder();
       {{#parentModel.vars}}
-          this.{{name}} = that.{{getter}}();
+          builder.{{name}}(that.{{getter}}());
       {{/parentModel.vars}}
       {{#vars}}
-          this.{{name}} = that.{{getter}}();
+          builder.{{name}}(that.{{getter}}());
       {{/vars}}
-          return this;
+          return builder;
       }
 
   {{#parentModel.vars}}
-      @com.fasterxml.jackson.annotation.JsonSetter("{{name}}")
+      @com.fasterxml.jackson.annotation.JsonAlias({"{{name}}, {{baseName}}"})
       public Builder {{name}}({{{datatypeWithEnum}}} {{name}}) {
           this.{{name}} = {{name}};
           return this;
@@ -143,7 +144,7 @@ public class {{classname}} {{#parent}}extends {{{parent}}} {{/parent}}{{#parcela
   {{/parentModel.vars}}
 
   {{#vars}}
-      @com.fasterxml.jackson.annotation.JsonSetter("{{name}}")
+      @com.fasterxml.jackson.annotation.JsonAlias({"{{name}}, {{baseName}}"})
       public Builder {{name}}({{{datatypeWithEnum}}} {{name}}) {
           this.{{name}} = {{name}};
           return this;
