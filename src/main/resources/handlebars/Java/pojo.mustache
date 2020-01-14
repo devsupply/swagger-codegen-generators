@@ -136,7 +136,7 @@ public class {{classname}} {{#parent}}extends {{{parent}}} {{/parent}}{{#parcela
       }
 
   {{#parentModel.vars}}
-      @com.fasterxml.jackson.annotation.JsonAlias({"{{name}}, {{baseName}}"})
+      @com.fasterxml.jackson.annotation.JsonAlias({"{{name}}", "{{baseName}}"})
       public Builder {{name}}({{{datatypeWithEnum}}} {{name}}) {
           this.{{name}} = {{name}};
           return this;
@@ -144,7 +144,7 @@ public class {{classname}} {{#parent}}extends {{{parent}}} {{/parent}}{{#parcela
   {{/parentModel.vars}}
 
   {{#vars}}
-      @com.fasterxml.jackson.annotation.JsonAlias({"{{name}}, {{baseName}}"})
+      @com.fasterxml.jackson.annotation.JsonAlias({"{{name}}", "{{baseName}}"})
       public Builder {{name}}({{{datatypeWithEnum}}} {{name}}) {
           this.{{name}} = {{name}};
           return this;
